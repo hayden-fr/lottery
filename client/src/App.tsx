@@ -33,7 +33,8 @@ const App = () => {
 
         // 根据汇总信息过滤掉已抽中的物品
         const filteredPrizes = data.flatMap((prize) => {
-          const remainingCount = prize.count - (drawHistorySummary[prize.name] || 0)
+          const remainingCount =
+            prize.count - (drawHistorySummary[prize.name] || 0)
           return Array(remainingCount).fill(prize.name)
         })
 
@@ -45,6 +46,13 @@ const App = () => {
   useEffect(() => {
     refreshLotteryPrize()
   }, [])
+
+  useEffect(() => {
+    // 当 drawHistory 发生变化并且为空时，刷新抽奖奖品
+    if (drawHistory.length === 0) {
+      refreshLotteryPrize()
+    }
+  }, [drawHistory])
 
   const startSpin = () => {
     if (prizes.length === 0) {
@@ -86,10 +94,10 @@ const App = () => {
   }
 
   const reset = () => {
-    refreshLotteryPrize()
     // 使用新的 setDrawHistoryWithStorage 方法
     setDrawHistoryWithStorage([])
     setCurrentPrize(null)
+    // 通过检测 drawHistory.length 是否为 0 来出发重新加载奖池
   }
 
   const undoLastDraw = () => {
