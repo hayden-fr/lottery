@@ -4,7 +4,11 @@ import './App.css'
 
 const App = () => {
   const [prizes, setPrizes] = useState<string[]>([])
-  const [drawHistory, setDrawHistory] = useState<string[]>([])
+  const [drawHistory, setDrawHistory] = useState<string[]>(() => {
+    // 从 localStorage 中读取抽奖结果
+    const savedDrawHistory = localStorage.getItem('drawHistory')
+    return savedDrawHistory ? JSON.parse(savedDrawHistory) : []
+  })
   const [isLotteryResultVisible, setLotteryResultVisible] = useState(false)
   const [isSpinning, setIsSpinning] = useState(false)
   const [currentPrize, setCurrentPrize] = useState<string | null>(null)
@@ -17,11 +21,23 @@ const App = () => {
     fetch('/lottery.json')
       .then((response) => response.json())
       .then((data: LotteryItem[]) => {
-        // 根据 count 展开奖品数量
-        const expandedPrizes = data.flatMap((prize) =>
-          Array(prize.count).fill(prize.name),
-        )
-        setPrizes(expandedPrizes)
+        // 汇总已抽奖品的信息
+        const drawHistorySummary: { [key: string]: number } = {}
+        drawHistory.forEach((prize) => {
+          if (drawHistorySummary[prize]) {
+            drawHistorySummary[prize]++
+          } else {
+            drawHistorySummary[prize] = 1
+          }
+        })
+
+        // 根据汇总信息过滤掉已抽中的物品
+        const filteredPrizes = data.flatMap((prize) => {
+          const remainingCount = prize.count - (drawHistorySummary[prize.name] || 0)
+          return Array(remainingCount).fill(prize.name)
+        })
+
+        setPrizes(filteredPrizes)
       })
       .catch((error) => console.error('Error loading lottery data:', error))
   }
@@ -43,6 +59,12 @@ const App = () => {
     }, 100)
   }
 
+  const setDrawHistoryWithStorage = (newDrawHistory: string[]) => {
+    setDrawHistory(newDrawHistory)
+    // 将新的抽奖结果保存到 localStorage
+    localStorage.setItem('drawHistory', JSON.stringify(newDrawHistory))
+  }
+
   const stopSpin = () => {
     if (!isSpinning) return
     setIsSpinning(false)
@@ -51,7 +73,8 @@ const App = () => {
       spinInterval.current = null
     }
     if (currentPrize && currentPrizeIndex !== null) {
-      setDrawHistory([...drawHistory, currentPrize])
+      // 使用新的 setDrawHistoryWithStorage 方法
+      setDrawHistoryWithStorage([...drawHistory, currentPrize])
       // 更新 prizes 数组
       setPrizes((prevPrizes) => {
         const newPrizes = [...prevPrizes]
@@ -64,7 +87,8 @@ const App = () => {
 
   const reset = () => {
     refreshLotteryPrize()
-    setDrawHistory([])
+    // 使用新的 setDrawHistoryWithStorage 方法
+    setDrawHistoryWithStorage([])
     setCurrentPrize(null)
   }
 
@@ -72,7 +96,8 @@ const App = () => {
     if (drawHistory.length > 0) {
       const lastPrize = drawHistory[drawHistory.length - 1]
       setPrizes([...prizes, lastPrize])
-      setDrawHistory(drawHistory.slice(0, -1))
+      // 使用新的 setDrawHistoryWithStorage 方法
+      setDrawHistoryWithStorage(drawHistory.slice(0, -1))
     } else {
       alert('没有可回退的抽奖记录！')
     }
