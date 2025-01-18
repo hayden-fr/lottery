@@ -56,7 +56,7 @@ const App = () => {
 
   const startSpin = () => {
     if (prizes.length === 0) {
-      alert('奖池已空！')
+      setCurrentPrize('奖池已空！')
       return
     }
     setIsSpinning(true)
