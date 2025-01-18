@@ -18,7 +18,7 @@ const App = () => {
   const spinInterval = useRef<number | null>(null)
 
   const refreshLotteryPrize = () => {
-    fetch('/lottery.json')
+    fetch(`${import.meta.env.BASE_URL}lottery.json`)
       .then((response) => response.json())
       .then((data: LotteryItem[]) => {
         // 汇总已抽奖品的信息
@@ -120,7 +120,7 @@ const App = () => {
       <h1 className="pt-36 flex justify-center mb-16 translate-x-32">
         <div className="relative">
           <img
-            src="/images/logo-2025.png"
+            src={`${import.meta.env.BASE_URL}images/logo-2025.png`}
             className="absolute w-80 bottom-0 -left-full"
           />
           <span className="text-white text-7xl font-bold">年会抽奖</span>
