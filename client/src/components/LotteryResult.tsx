@@ -28,13 +28,11 @@ const LotteryResult: React.FC<LotteryResultProps> = ({
   }
 
   return (
-    <div
-      className={classnames(
-        'fixed w-full h-full left-0 top-0 bg-black/50',
-        isDrawerOpen ? 'block' : 'hidden',
-      )}
-      onClick={closeDrawer}
-    >
+    <div className={classnames(isDrawerOpen ? 'block' : 'hidden')}>
+      <div
+        className="fixed w-full h-full left-0 top-0 bg-black/50"
+        onClick={closeDrawer}
+      ></div>
       <div
         className={classnames(
           'fixed bottom-0 right-0 w-1/4 h-full bg-red-800 text-white transition-transform transform',
